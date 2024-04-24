@@ -1,5 +1,22 @@
 <?php
 session_start();
+function getRealIpAddr() {
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        // Verifica se o IP do cliente está disponível
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        // Verifica se o IP foi passado por um proxy
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    } else {
+        // Se nenhuma informação de IP estiver disponível, usa o REMOTE_ADDR
+        $ip = $_SERVER['REMOTE_ADDR'];
+    }
+    return $ip;
+}
+
+// Obtém o IP do cliente
+$clientIP = getRealIpAddr();
+
 // Verifica se o formulário foi submetido
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Configurações do banco de dados
@@ -15,8 +32,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         // Prepara a instrução SQL para inserção de dados
-        $stmt = $conn->prepare("INSERT INTO tabela_avaliacao (restaurante, cupom_fiscal, nome, cpf, telefone, avaliacao, atendimento, qualidade, apresentacao, media_geral) 
-                                VALUES (:restaurante, :cupom_fiscal, :nome, :cpf, :telefone, :avaliacao, :atendimento, :qualidade, :apresentacao, :media_geral)");
+        $stmt = $conn->prepare("INSERT INTO tabela_avaliacao (restaurante, cupom_fiscal, nome, cpf, telefone, avaliacao, atendimento, qualidade, apresentacao, media_geral,ip_request) 
+                                VALUES (:restaurante, :cupom_fiscal, :nome, :cpf, :telefone, :avaliacao, :atendimento, :qualidade, :apresentacao, :media_geral,:ip_request)");
 
         // Calcula a média das notas
         $media_geral = ($_POST['atendimento'] + $_POST['qualidade'] + $_POST['apresentacao']) / 3;
@@ -33,6 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(':qualidade', $_POST['qualidade']);
         $stmt->bindParam(':apresentacao', $_POST['apresentacao']);
         $stmt->bindParam(':media_geral', $media_geral);
+        $stmt->bindParam(':ip_request', $clientIP);
 
         // Executa a instrução SQL
         $stmt->execute();

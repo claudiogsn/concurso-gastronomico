@@ -1,5 +1,21 @@
 <?php
 session_start();
+function getRealIpAddr() {
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        // Verifica se o IP do cliente está disponível
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        // Verifica se o IP foi passado por um proxy
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    } else {
+        // Se nenhuma informação de IP estiver disponível, usa o REMOTE_ADDR
+        $ip = $_SERVER['REMOTE_ADDR'];
+    }
+    return $ip;
+}
+
+// Obtém o IP do cliente
+$clientIP = getRealIpAddr();
     // Configurações do banco de dados
     $servername = "srv1196.hstgr.io";
     $username = "u675487118_gastro";
@@ -63,6 +79,8 @@ session_start();
             <strong>Qualidade:</strong> <?php echo $_SESSION['qualidade']; ?><br>
             <strong>Apresentação:</strong> <?php echo $_SESSION['apresentacao']; ?><br>
             <strong>Media Geral:</strong> <?php echo $_SESSION['media_geral']; ?><br>
+            <p><?php echo $clientIP; ?></p><br>
+
 
         </div>
         <a href="index.html" class="text-blue-500">Voltar ao Início</a>
